@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:test_game2/animal_select.dart';
+import 'storage.dart';
 
 // 게임 시작 화면 위젯
 class StartGame extends StatefulWidget {
@@ -44,6 +45,34 @@ class StartGameState extends State<StartGame> with TickerProviderStateMixin {
     _fadeController.repeat(reverse: true); // 페이드 애니메이션 반복
   }
 
+  showResetConfirmation() async {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text("데이터 초기화"),
+          content: const Text("데이터를 모두 초기화하겠습니까?"),
+          actions: [
+            TextButton(
+              child: const Text("취소"),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            TextButton(
+              child: const Text("확인"),
+              onPressed: () async {
+                await DataStorage().resetData();
+                Navigator.of(context).pop();
+                // 필요하다면 초기화 후 다른 작업을 수행합니다.
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
@@ -64,6 +93,7 @@ class StartGameState extends State<StartGame> with TickerProviderStateMixin {
                 fit: BoxFit.cover,
               ),
             ),
+
             Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -113,6 +143,11 @@ class StartGameState extends State<StartGame> with TickerProviderStateMixin {
               ),
             ),
           ],
+        ),
+        floatingActionButton: FloatingActionButton(
+          onPressed: showResetConfirmation,
+          tooltip: "데이터 초기화",
+          child: const Icon(Icons.delete),
         ),
       ),
     );

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:test_game2/storage.dart';
 import 'start_game.dart';
 
 // 앱 시작점
@@ -37,7 +38,8 @@ class ClickerHomePage extends StatefulWidget {
   ClickerHomePageState createState() => ClickerHomePageState();
 }
 
-class ClickerHomePageState extends State<ClickerHomePage> {
+class ClickerHomePageState extends State<ClickerHomePage>
+    with WidgetsBindingObserver {
   int experience = 0; // 경험치 초기값 설정
   int level = 1; // 레벨 초기값 설정
   int attackPower = 10; // 초기 공격력 설정
@@ -58,77 +60,229 @@ class ClickerHomePageState extends State<ClickerHomePage> {
         attackPower += 5; // 레벨업할때마다 공격력 5씩 증가
       }
     });
+    _saveGameData();
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    // 게임 데이터 로드
+    _loadGameData();
+    WidgetsBinding.instance.addObserver(this); // 옵저버 등록
+  }
+
+  _loadGameData() async {
+    var loadedData = await DataStorage().loadData();
+
+    // 로드된 데이터가 있는지 체크
+    setState(() {
+      experience = loadedData['experience'] ?? 0; // 기본값 설정
+      level = loadedData['level'] ?? 1; // 기본값 설정
+      attackPower = loadedData['attackPower'] ?? 10; // 기본값 설정
+    });
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this); // 옵저버 제거
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+    // 앱이 백그라운드로 이동하거나 일시 중지될 때 저장
+    if (state == AppLifecycleState.paused ||
+        state == AppLifecycleState.inactive) {
+      _saveGameData();
+    }
+  }
+
+  _saveGameData() async {
+    await DataStorage().saveData(experience, level, attackPower);
   }
 
   double scaleValue = 1.0; // 이미지 크기 조절 변수
 
+  bool _isMenuOpen = false; // 메뉴가 열렸는지 판별하는 변수
+
+  void toggleMenu() {
+    // 메뉴 상태 토글 함수
+    setState(() {
+      _isMenuOpen = !_isMenuOpen;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('터치해서 동물 키우기')),
       body: Stack(
         children: [
-          // 배경 이미지
           Positioned.fill(
-              child: Image.asset(
-            'assets/images/background.png',
-            fit: BoxFit.cover,
-          )),
-          // 게임 내용 UI
-          Center(
-              child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              Image.asset(
-                widget.imagePath,
-                width: 100,
-                height: 100,
+            child: Image.asset(
+              'assets/images/background.png',
+              fit: BoxFit.cover,
+            ),
+          ),
+          Positioned(
+            top: 43,
+            left: 0,
+            right: 0,
+            child: Center(
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text('Level: $level'),
+                  const SizedBox(width: 20),
+                  Text('이름: ${widget.petName}'),
+                ],
               ),
-              const SizedBox(height: 20),
-              Text('이름: ${widget.petName}'),
-              const SizedBox(height: 10),
-              Text('Level: $level'),
-              const SizedBox(height: 10),
-              Text('식탐: $attackPower'),
-              const SizedBox(height: 10),
-              Text('Experience: $experience / $experienceRequiredForNextLevel'),
-              const SizedBox(height: 20),
-              GestureDetector(
+            ),
+          ),
+          Positioned(
+            top: MediaQuery.of(context).size.height * 0.1,
+            left: MediaQuery.of(context).size.width * 0.05,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('경험치: $experience / $experienceRequiredForNextLevel'),
+              ],
+            ),
+          ),
+          Positioned(
+            top: MediaQuery.of(context).size.height * 0.1,
+            right: MediaQuery.of(context).size.width *
+                0.05, // 여기서 right 속성을 사용해 오른쪽 위치를 고정
+            child: Column(
+              children: [
+                const Text('아이템'),
+                const SizedBox(height: 10),
+                Container(
+                  width: 50,
+                  height: 50,
+                  color: Colors.blue,
+                  child: const Center(child: Text('1')),
+                ),
+                const SizedBox(height: 10),
+                Container(
+                  width: 50,
+                  height: 50,
+                  color: Colors.red,
+                  child: const Center(child: Text('2')),
+                ),
+              ],
+            ),
+          ),
+          Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Image.asset(
+                  widget.imagePath,
+                  width: 100,
+                  height: 100,
+                ),
+                GestureDetector(
                   onTapDown: (_) {
                     setState(() {
-                      scaleValue = 1.1; // 이미지를 약간 확대
+                      scaleValue = 1.1;
                     });
                   },
                   onTapUp: (_) {
                     setState(() {
-                      scaleValue = 1.0; // 이미지를 원래 크기로 돌려놓기
+                      scaleValue = 1.0;
                     });
-                    gainExperience(); // 경험치 증가 메서드 호출
+                    gainExperience();
                   },
                   onTapCancel: () {
                     setState(() {
-                      scaleValue = 1.0; // 사용자가 이미지 밖으로 이동하면 원래 크기로 돌려놓기
+                      scaleValue = 1.0;
                     });
                   },
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 100),
+                    child: Transform.scale(
+                      scale: scaleValue,
+                      child: Image.asset('assets/images/dog_food.png',
+                          width: 100, height: 100),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Positioned(
+            top: 30,
+            left: 20,
+            child: ElevatedButton(
+              onPressed: toggleMenu,
+              child: const Text('메뉴'),
+            ),
+          ),
+          if (_isMenuOpen) ...[
+            // 메뉴가 열려있을 경우 위젯표시
+            // 반투명 오버레이
+            Positioned.fill(
+              child: Container(
+                color: Colors.black54,
+              ),
+            ),
+            Center(
+              child: Container(
+                  width: MediaQuery.of(context).size.width * 0.7,
+                  height: MediaQuery.of(context).size.height * 0.4,
+                  color: Colors.white,
                   child: Column(
                     children: [
-                      AnimatedContainer(
-                        duration: const Duration(milliseconds: 100),
-                        child: Transform.scale(
-                          scale: scaleValue,
-                          child: Image.asset('assets/images/dog_food.png',
-                              width: 100, height: 100),
-                        ),
-                      ),
-                      const SizedBox(height: 10), // 이미지와 텍스트 사이에 간격을 줍니다.
-                      const Text('먹이주기',
+                      const Text('메뉴',
                           style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold)), // 먹이주기 텍스트 추가
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                          )),
+                      const Divider(),
+                      Expanded(
+                        child: ListView(
+                          children: [
+                            ElevatedButton(
+                                onPressed: () {
+                                  Navigator.pushReplacement(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => const StartGame(),
+                                    ),
+                                  );
+                                },
+                                child: const Text('타이틀 화면으로')), // 타이틀 화면 로직//
+                            ElevatedButton(
+                                onPressed: () {},
+                                child: const Text('동물 정보')), // 동물 정보 로직
+                            ElevatedButton(
+                                onPressed: () {},
+                                child: const Text('상점')), // 상점 로직
+                            ElevatedButton(
+                                onPressed: toggleMenu,
+                                child: const Text('메뉴 닫기')),
+                          ],
+                        ),
+                      )
                     ],
-                  ))
-            ],
-          )),
+                  )),
+            )
+          ],
+          Positioned(
+            bottom: 10,
+            left: MediaQuery.of(context).size.width * 0.1,
+            right: MediaQuery.of(context).size.width * 0.1,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                ElevatedButton(onPressed: () {}, child: const Text('산책하기')),
+                ElevatedButton(onPressed: () {}, child: const Text('메뉴1')),
+                ElevatedButton(onPressed: () {}, child: const Text('메뉴2')),
+                ElevatedButton(onPressed: () {}, child: const Text('메뉴3')),
+              ],
+            ),
+          ),
         ],
       ),
     );
