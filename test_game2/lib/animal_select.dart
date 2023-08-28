@@ -26,7 +26,7 @@ class AnimalSelect extends StatelessWidget {
                     width: 300, fit: BoxFit.cover),
                 const SizedBox(height: 100),
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: <Widget>[
                     _animalImageButton(context, "강아지",
                         "assets/images/dog_button.png", 100.0, 100.0),

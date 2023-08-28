@@ -34,6 +34,12 @@ class NameInputPageState extends State<NameInputPage> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
+                Image.asset(
+                  widget.imagePath,
+                  width: 100,
+                  height: 100,
+                ),
+                const SizedBox(height: 20),
                 Text("${widget.animalType}의 이름을 입력해주세요."),
                 TextField(
                   controller: nameController,
