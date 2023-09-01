@@ -2,7 +2,6 @@ import 'package:flame/components.dart';
 import 'package:flame/events.dart';
 import 'package:flame/flame.dart';
 import 'package:flame/game.dart';
-import 'package:flame/sprite.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -22,11 +21,14 @@ enum CharacterState {
   running,
 }
 
-class MyGame extends FlameGame with TapCallbacks {
+class MyGame extends FlameGame with MultiTouchDragDetector, TapDetector {
   late final SpriteAnimation runningAnimation;
   late final SpriteAnimation idleAnimation;
   late final SpriteAnimationGroupComponent<CharacterState> character;
   CharacterState state = CharacterState.idle;
+  Vector2? targetPosition;
+  bool isMoving = false;
+  final double fixedDistance = 50.0;
 
   @override
   Future<void> onLoad() async {
@@ -37,7 +39,7 @@ class MyGame extends FlameGame with TapCallbacks {
       }
 
       // Manual frame creation
-      final frameSize = Vector2(80, 80);
+      final frameSize = Vector2(82, 82);
       final runningFrames = [
         Sprite(image, srcPosition: Vector2(0, 0), srcSize: frameSize),
         Sprite(image, srcPosition: Vector2(80, 0), srcSize: frameSize),
@@ -75,46 +77,44 @@ class MyGame extends FlameGame with TapCallbacks {
     }
   }
 
-
-    bool isMoving = false; // 캐릭터가 움직이고 있는지를 나타내는 플래그
-
   @override
-  void onTapDown(TapDownEvent event) {
-    isMoving = true; // 움직임 시작
-    updateTargetPosition(event.localPosition);
-  }
-
-  @override
-  void onTapUp(TapUpEvent event) {
-    isMoving = false; // 움직임 중지
-    state = CharacterState.idle;
-    character.current = CharacterState.idle;
-  }
-
-  @override
-  void onTapCancel() {
-    // 탭이 취소되면 움직임을 중지
-    isMoving = false;
-    state = CharacterState.idle;
-    character.current = CharacterState.idle;
-  }
-
-  @override
-  void onTapMove(TapMoveEvent event) {
-    if (isMoving) {
-      // 움직이고 있는 상태에서만 타겟 위치를 업데이트
-      updateTargetPosition(event.localPosition);
-    }
-  }
-
-  void updateTargetPosition(Vector2 position) {
-    targetPosition = position;
+  void onTapDown(TapDownInfo info) {
+    super.onTapDown(info);
+    final direction =
+        (info.eventPosition.game - character.position).normalized();
+    targetPosition = character.position + direction * fixedDistance;
     state = CharacterState.running;
     character.current = CharacterState.running;
+    isMoving = true;
   }
-  
-    
-  if(isMoving && targetPosition != null) {
+
+  @override
+  void onDragStart(int pointerId, DragStartInfo info) {
+    super.onDragStart(pointerId, info);
+    targetPosition = info.eventPosition.game;
+    state = CharacterState.running;
+    character.current = CharacterState.running;
+    isMoving = true;
+  }
+
+  @override
+  void onDragUpdate(int pointerId, DragUpdateInfo info) {
+    super.onDragUpdate(pointerId, info);
+    targetPosition = info.eventPosition.game;
+  }
+
+  @override
+  void onDragEnd(int pointerId, DragEndInfo info) {
+    super.onDragEnd(pointerId, info);
+    isMoving = false;
+  }
+
+  @override
+  void onDragCancel(int pointerId) {
+    super.onDragCancel(pointerId);
+    isMoving = false;
+  }
+
   @override
   void update(double dt) {
     super.update(dt);
@@ -126,13 +126,16 @@ class MyGame extends FlameGame with TapCallbacks {
         targetPosition = null;
         state = CharacterState.idle;
         character.current = CharacterState.idle;
+        isMoving = false;
       } else {
         moveVector.normalize();
-        character.position += moveVector * 100 * dt; // 100은 이동 속도입니다.
+        character.position += moveVector * 150 * dt; // 100 is the speed.
+        state = CharacterState.running;
+        character.current = CharacterState.running;
       }
+    } else {
+      state = CharacterState.idle;
+      character.current = CharacterState.idle;
     }
   }
-  }
-
-
 }
