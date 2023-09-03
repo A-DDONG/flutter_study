@@ -68,12 +68,11 @@ class MyGame extends FlameGame with MultiTouchDragDetector, TapDetector {
   @override
   Future<void> onLoad() async {
     // 이미지 로딩
-    final image = await Flame.images.load('dog2.png');
+    final image = await Flame.images.load('cat2.png');
 
-    // 프레임 크기 설정
-    final frameSize = Vector2(96, 96);
+// 프레임 크기 설정
+    final frameSize = Vector2(32, 32);
 
-    // 애니메이션 설정
     animations = {
       CharacterState.idleDown: SpriteAnimation.spriteList(
         [
@@ -84,54 +83,54 @@ class MyGame extends FlameGame with MultiTouchDragDetector, TapDetector {
       CharacterState.walkingDown: SpriteAnimation.spriteList(
         [
           Sprite(image, srcPosition: Vector2(0, 0), srcSize: frameSize),
+          Sprite(image, srcPosition: Vector2(32, 0), srcSize: frameSize),
+          Sprite(image, srcPosition: Vector2(64, 0), srcSize: frameSize),
           Sprite(image, srcPosition: Vector2(96, 0), srcSize: frameSize),
-          Sprite(image, srcPosition: Vector2(192, 0), srcSize: frameSize),
-          Sprite(image, srcPosition: Vector2(288, 0), srcSize: frameSize),
         ],
         stepTime: 0.1,
       ),
       CharacterState.idleRight: SpriteAnimation.spriteList(
         [
-          Sprite(image, srcPosition: Vector2(0, 96), srcSize: frameSize),
+          Sprite(image, srcPosition: Vector2(0, 32), srcSize: frameSize),
         ],
         stepTime: 1,
       ),
       CharacterState.walkingRight: SpriteAnimation.spriteList(
         [
-          Sprite(image, srcPosition: Vector2(0, 96), srcSize: frameSize),
-          Sprite(image, srcPosition: Vector2(96, 96), srcSize: frameSize),
-          Sprite(image, srcPosition: Vector2(192, 96), srcSize: frameSize),
-          Sprite(image, srcPosition: Vector2(288, 96), srcSize: frameSize),
+          Sprite(image, srcPosition: Vector2(0, 32), srcSize: frameSize),
+          Sprite(image, srcPosition: Vector2(32, 32), srcSize: frameSize),
+          Sprite(image, srcPosition: Vector2(64, 32), srcSize: frameSize),
+          Sprite(image, srcPosition: Vector2(96, 32), srcSize: frameSize),
         ],
         stepTime: 0.1,
       ),
       CharacterState.idleUp: SpriteAnimation.spriteList(
         [
-          Sprite(image, srcPosition: Vector2(0, 192), srcSize: frameSize),
+          Sprite(image, srcPosition: Vector2(0, 64), srcSize: frameSize),
         ],
         stepTime: 1,
       ),
       CharacterState.walkingUp: SpriteAnimation.spriteList(
         [
-          Sprite(image, srcPosition: Vector2(0, 192), srcSize: frameSize),
-          Sprite(image, srcPosition: Vector2(96, 192), srcSize: frameSize),
-          Sprite(image, srcPosition: Vector2(192, 192), srcSize: frameSize),
-          Sprite(image, srcPosition: Vector2(288, 192), srcSize: frameSize),
+          Sprite(image, srcPosition: Vector2(0, 64), srcSize: frameSize),
+          Sprite(image, srcPosition: Vector2(32, 64), srcSize: frameSize),
+          Sprite(image, srcPosition: Vector2(64, 64), srcSize: frameSize),
+          Sprite(image, srcPosition: Vector2(96, 64), srcSize: frameSize),
         ],
         stepTime: 0.1,
       ),
       CharacterState.idleLeft: SpriteAnimation.spriteList(
         [
-          Sprite(image, srcPosition: Vector2(0, 288), srcSize: frameSize),
+          Sprite(image, srcPosition: Vector2(0, 96), srcSize: frameSize),
         ],
         stepTime: 1,
       ),
       CharacterState.walkingLeft: SpriteAnimation.spriteList(
         [
-          Sprite(image, srcPosition: Vector2(0, 288), srcSize: frameSize),
-          Sprite(image, srcPosition: Vector2(96, 288), srcSize: frameSize),
-          Sprite(image, srcPosition: Vector2(192, 288), srcSize: frameSize),
-          Sprite(image, srcPosition: Vector2(288, 288), srcSize: frameSize),
+          Sprite(image, srcPosition: Vector2(0, 96), srcSize: frameSize),
+          Sprite(image, srcPosition: Vector2(32, 96), srcSize: frameSize),
+          Sprite(image, srcPosition: Vector2(64, 96), srcSize: frameSize),
+          Sprite(image, srcPosition: Vector2(96, 96), srcSize: frameSize),
         ],
         stepTime: 0.1,
       ),
