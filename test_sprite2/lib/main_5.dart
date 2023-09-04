@@ -2,6 +2,7 @@ import 'package:flame/components.dart';
 import 'package:flame/events.dart';
 import 'package:flame/flame.dart';
 import 'package:flame/game.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:test_sprite/map.dart';
@@ -71,8 +72,16 @@ class MyGame extends FlameGame with MultiTouchDragDetector, TapDetector {
   // 게임 리소스 로드
   @override
   Future<void> onLoad() async {
-    myWorld = World(); // World 인스턴스 생성
-    myCamera = CameraComponent(world: myWorld); // CameraComponent 인스턴스 생성
+    // World 컴포넌트를 초기화합니다.
+    myWorld = World();
+
+    // CameraComponent를 초기화하고, World를 참조하도록 설정합니다.
+    myCamera = CameraComponent.withFixedResolution(
+      world: myWorld,
+      width: 1600,
+      height: 1200,
+    );
+
     // 맵 이미지 로딩
     final mapImage = await Flame.images.load('map.png');
     final mapSprite = Sprite(mapImage);
@@ -168,15 +177,16 @@ class MyGame extends FlameGame with MultiTouchDragDetector, TapDetector {
 
     character.position = Vector2(characterX, characterY);
     character.anchor = Anchor.center;
-    await add(character); // 캐릭터 추가
+
+    await add(character);
+
+    // await add(character); // 캐릭터 추가
     isLoaded = true;
-    print("Game resources loaded: $isLoaded");
-    // await myWorld.add(character); // World에 캐릭터 추가
+    await add(myWorld);
+
     await add(myCamera); // 게임에 카메라 추가
-    // 카메라 로직 (예: 캐릭터 따라가기)
-    print("CameraComponent added");
-    myCamera.follow(character);
-    print("Camera following character");
+
+    myCamera.follow(character); // 카메라가 캐릭터를 따라가게 설정
   }
 
   // 화면 크기가 변경되면 호출
@@ -304,6 +314,9 @@ class MyGame extends FlameGame with MultiTouchDragDetector, TapDetector {
   @override
   void update(double dt) {
     super.update(dt);
+    if (kDebugMode) {
+      print("Camera Position: ${myCamera.viewport.position}");
+    }
 
     if (targetPosition != null) {
       final moveVector = targetPosition! - character.position;

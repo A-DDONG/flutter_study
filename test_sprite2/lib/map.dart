@@ -7,7 +7,7 @@ class MapComponent extends SpriteComponent {
   @override
   Future<void> onLoad() async {
     // 맵의 크기 설정
-    size = Vector2(1000, 1000); // 예를 들어, 1000x1000 픽셀로 설정
+    size = Vector2(1600, 1200); // 예를 들어, 1000x1000 픽셀로 설정
 
     // 맵의 초기 위치 설정
     position = Vector2(0, 0); // 예를 들어, 게임 월드의 (0, 0) 위치에 맵을 배치
