@@ -4,6 +4,7 @@ import 'package:flame/flame.dart';
 import 'package:flame/game.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:test_sprite/map.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -33,6 +34,9 @@ class MyGame extends FlameGame with MultiTouchDragDetector, TapDetector {
       character; // 캐릭터 컴포넌트
   CharacterState state = CharacterState.idleDown; // 캐릭터 초기 상태
 
+  late final World myWorld; // World 컴포넌트 추가
+  late final CameraComponent myCamera; // CameraComponent 추가
+
   Vector2? targetPosition; // 캐릭터가 이동할 목표 위치
   bool isTapHeld = false; // 탭이 눌린 상태인지 확인하는 변수
   Vector2? tapPosition; // 탭이 발생한 위치를 저장할 변수
@@ -51,8 +55,8 @@ class MyGame extends FlameGame with MultiTouchDragDetector, TapDetector {
   @override
   void render(Canvas canvas) {
     // 배경을 흰색으로 설정
-    final rect = Rect.fromPoints(const Offset(0, 0), Offset(size.x, size.y));
-    canvas.drawRect(rect, Paint()..color = Colors.white);
+    // final rect = Rect.fromPoints(const Offset(0, 0), Offset(size.x, size.y));
+    // canvas.drawRect(rect, Paint()..color = Colors.white);
     // 터치 이펙트 그리기
     if (shouldRenderTouchEffect && touchEffectPosition != null) {
       final paint = Paint()
@@ -67,10 +71,20 @@ class MyGame extends FlameGame with MultiTouchDragDetector, TapDetector {
   // 게임 리소스 로드
   @override
   Future<void> onLoad() async {
+    myWorld = World(); // World 인스턴스 생성
+    myCamera = CameraComponent(world: myWorld); // CameraComponent 인스턴스 생성
+    // 맵 이미지 로딩
+    final mapImage = await Flame.images.load('map.png');
+    final mapSprite = Sprite(mapImage);
+    final mapComponent = MapComponent(mapSprite);
+
+    // 맵 컴포넌트를 게임에 추가
+    await add(mapComponent);
+
     // 이미지 로딩
     final image = await Flame.images.load('cat2.png');
 
-// 프레임 크기 설정
+    // 프레임 크기 설정
     final frameSize = Vector2(32, 32);
 
     animations = {
@@ -156,6 +170,13 @@ class MyGame extends FlameGame with MultiTouchDragDetector, TapDetector {
     character.anchor = Anchor.center;
     await add(character); // 캐릭터 추가
     isLoaded = true;
+    print("Game resources loaded: $isLoaded");
+    // await myWorld.add(character); // World에 캐릭터 추가
+    await add(myCamera); // 게임에 카메라 추가
+    // 카메라 로직 (예: 캐릭터 따라가기)
+    print("CameraComponent added");
+    myCamera.follow(character);
+    print("Camera following character");
   }
 
   // 화면 크기가 변경되면 호출
@@ -283,6 +304,7 @@ class MyGame extends FlameGame with MultiTouchDragDetector, TapDetector {
   @override
   void update(double dt) {
     super.update(dt);
+
     if (targetPosition != null) {
       final moveVector = targetPosition! - character.position;
       if (moveVector.length < 5) {
